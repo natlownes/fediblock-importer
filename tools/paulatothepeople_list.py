@@ -3,34 +3,47 @@
 # usage: python paulatothepeoplelist.py > list.yaml
 
 from bs4 import BeautifulSoup
+from bs4.element import Tag
 import requests
 import yaml
+
+def _find_table(heading):
+  for e in heading.next_siblings:
+    if(type(e) == Tag):
+      if(e.name == 'table'):
+        return e
 
 def main():
   page = requests.get("https://joinfediverse.wiki/FediBlock")
   soup = BeautifulSoup(page.text, "html.parser")
 
-  rows = soup.find("table").find("tbody").find_all("tr")
+  headings = (
+    'Malware &amp; co Blocklist',
+    'Worst offenders',
+    'Main Blocklist',
+  )
 
   instances = []
 
-  for row in rows:
-    instance = {}
+  heading_elements = soup.select('h2 .mw-headline')
+  list_headings = [h.find_parent('h2') for h in heading_elements if h.decode_contents().strip() in headings]
+  for lh in list_headings:
+    tbl = _find_table(lh)
+    rows = tbl.select('tr')
 
-    host = row.find('th').text.rstrip()
-    other = row.find_all('td')
+    for row in rows:
+      instance = {}
 
-    if host != "instance" and len(host) > 0:
-      instance['hostname'] = host
-      instance['severity'] = 'suspend'
-    else:
-      continue
+      host = row.find('th').text.rstrip()
+      other = row.find_all('td')
 
-    instance['public_comment'] = other[1].text.rstrip()
-    if len(instance['public_comment']) == 0:
-      instance['public_comment'] = other[0].text.rstrip()
+      if host != "instance" and len(host) > 0:
+        instance['hostname'] = host
+        instance['severity'] = 'suspend'
+      else:
+        continue
 
-    instances.append(instance)
+      instances.append(instance)
 
   print(yaml.dump(instances))
 
