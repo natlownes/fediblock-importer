@@ -87,7 +87,8 @@ def _block_hosts(token, instances):
       response = requests.post(
         f'{url}/api/v1/admin/domain_blocks',
         headers={'Authorization': f'Bearer {token}'},
-        json={'domain': hostname, 'severity': instance['severity'], 'public_comment': instance['public_comment']},
+        json={'domain': hostname, 'severity': instance['severity'],
+          'public_comment': instance.get('public_comment', '')},
       )
       if response.status_code == 200:
         print('done!')
