@@ -3,9 +3,12 @@ import requests
 import validators
 import yaml
 
-INSTANCE_URL = ""
-CLIENT_ID = ""
-CLIENT_SECRET = ""
+from os import environ
+
+
+INSTANCE_URL = environ['MASTODON_INSTANCE_URL']
+CLIENT_ID = environ['MASTODON_CLIENT_ID']
+CLIENT_SECRET = environ['MASTODON_CLIENT_SECRET']
 
 class ValidationException(BaseException):
   pass
